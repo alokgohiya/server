@@ -1,3 +1,6 @@
 flask
 firebase-admin
 gunicorn
+flask-cors
+
+
