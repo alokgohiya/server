@@ -1,7 +1,8 @@
-flask
+gunicorn==21.2.0flask
 flask-cors
 pymongo
 certifi
+gunicorn
 
 
 
