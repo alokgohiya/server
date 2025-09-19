@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlokAi - Prompts</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header>
+  <h1>🔥 All Prompts</h1>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/prompts-page">Prompts</a>
+
+    <a href="/about">About</a>
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/contactus">Contact Us</a>
+  </nav>
+</header>
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="🔍 Search prompts...">
+</div>
+<div id="noResults" style="display:none; text-align:center; margin:1rem; color:#aaa;">
+  🚫 No results found
+</div>
+<main>
+
+
+  <div class="content">
+    <h2>All Prompts</h2>
+    <div id="prompt-grid" class="grid"></div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2025 AlokAi</p>
+</footer>
+
+<script>
+  // Universal copy function (desktop + mobile compatible)
+  function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    } else {
+      return new Promise((resolve, reject) => {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          const successful = document.execCommand("copy");
+          document.body.removeChild(textArea);
+          successful ? resolve() : reject();
+        } catch (err) {
+          document.body.removeChild(textArea);
+          reject(err);
+        }
+      });
+    }
+  }
+  
+  // Fetch all prompts at once
+  function loadPrompts() {
+    fetch("/allprompt?page=1&limit=1000") // large limit to get all
+      .then(res => res.json())
+      .then(data => {
+        const grid = document.getElementById("prompt-grid");
+        grid.innerHTML = "";
+        data.forEach(p => {
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <img src="${p.photo}" alt="${p.title}">
+            <h3>${p.title}</h3>
+            <p>${p.description}</p>
+            <p><b>Category:</b> ${p.category}</p>
+  
+            <button class="copy-btn"
+                style="background:#00ffd5;color:#111;border:none;
+                       padding:0.5rem 1rem;border-radius:8px;
+                       cursor:pointer;font-weight:bold;margin:0.5rem 0;">
+                📋 Copy
+            </button>
+            <button class="gemini-btn" style="
+                background:#ff3cac;color:#fff;border:none;
+                padding:0.5rem 1rem;border-radius:8px;
+                cursor:pointer;font-weight:bold;margin:1rem 0;">
+                Create Image
+            </button>
+            <div class="ad-container" style="display:none; margin-top:10px;"></div>
+          `;
+  
+          // Gemini button
+          div.querySelector(".gemini-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            window.open("https://gemini.google.com/app", "_blank");
+          });
+  
+          // ✅ Copy button (mobile compatible)
+          div.querySelector(".copy-btn").addEventListener("click", (e) => {
+            e.stopPropagation(); // prevent card click
+            copyToClipboard(p.description)
+              .then(() => {
+                e.target.innerText = "✅ Copied!";
+                setTimeout(() => e.target.innerText = "📋 Copy", 2000);
+              })
+              .catch(() => alert("Copy not supported on this browser"));
+          });
+  
+          // Ad load on card click
+          div.addEventListener("click", () => {
+            const adContainer = div.querySelector(".ad-container");
+            if (adContainer.innerHTML === "") {
+              adContainer.innerHTML = `
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXX"
+                     data-ad-slot="1111111111"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+              `;
+              (adsbygoogle = window.adsbygoogle || []).push({});
+              adContainer.style.display = "block";
+            }
+          });
+  
+          grid.appendChild(div);
+        });
+      })
+      .catch(err => console.error("Error fetching prompts:", err));
+  }
+  
+  // Search logic
+  const searchInput = document.getElementById("searchInput");
+  const grid = document.getElementById("prompt-grid");
+  const noResults = document.getElementById("noResults");
+  
+  searchInput.addEventListener("input", () => {
+    const value = searchInput.value.toLowerCase();
+    const cards = grid.querySelectorAll(".card");
+    let visibleCount = 0;
+  
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      if (text.includes(value)) {
+        card.style.display = "block";
+        visibleCount++;
+      } else {
+        card.style.display = "none";
+      }
+    });
+  
+    noResults.style.display = (visibleCount === 0) ? "block" : "none";
+  });
+  
+  // Load all prompts on page load
+  loadPrompts();
+  </script>
+  
+
+</body>
+</html>
