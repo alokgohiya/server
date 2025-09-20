@@ -13,9 +13,13 @@ CORS(app)  # GitHub Pages frontend fetch ke liye
 
 
 # -------- MongoDB setup --------
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise ValueError("MONGO_URI environment variable not set!")
+    
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 ssl_context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1
-app.config["MONGO_URI"] = os.getenv("MONGO_URI")
+app.config["MONGO_URI"] = MONGO_URI
 client = MongoClient(MONGO_URI, tls=True, tlsCAFile=certifi.where())
 db = client["promptsDB"]        # database name
 collection = db["prompts"]
@@ -92,4 +96,5 @@ def privacy():
     return render_template("privacypolicy.html")
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5000, debug=True)
+
 
