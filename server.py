@@ -4,6 +4,9 @@ from pymongo import MongoClient
 from datetime import datetime
 import certifi
 import ssl
+import os
+
+
 app = Flask(__name__)
 CORS(app)  # GitHub Pages frontend fetch ke liye
 
@@ -12,7 +15,7 @@ CORS(app)  # GitHub Pages frontend fetch ke liye
 # -------- MongoDB setup --------
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 ssl_context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1
-MONGO_URI = "mongodb+srv://alokgohiya200_db_user:alokbhaikiai@cluster0.8vo993a.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI, tls=True, tlsCAFile=certifi.where())
 db = client["promptsDB"]        # database name
 collection = db["prompts"]
@@ -89,3 +92,4 @@ def privacy():
     return render_template("privacypolicy.html")
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5000, debug=True)
+
